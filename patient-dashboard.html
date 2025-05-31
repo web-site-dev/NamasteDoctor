@@ -174,8 +174,11 @@
       chatInput.value = "";
       appendMessage(text, "patient", timestamp);
       setTypingStatus(false);
-      
-      // Add automatic response
+
+      // ✅ Send to Socket.IO server
+      sendMessageToSocket(text);
+
+      // Optional: system response
       setTimeout(() => {
         appendMessage("Your message has been received and will be answered as soon as possible by our medical staff.", "system");
       }, 1000);
@@ -194,6 +197,20 @@
       typingTimeout = setTimeout(() => {
         db.ref("typing/" + patientId).set(false);
       }, 2000);
+    }
+  </script>
+
+  <!-- ✅ Socket.IO Integration -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log("Connected to Socket.IO server as patient:", socket.id);
+    });
+
+    function sendMessageToSocket(text) {
+      socket.emit("patient-message", { message: text });
     }
   </script>
 </body>

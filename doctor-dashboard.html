@@ -110,6 +110,11 @@
       });
 
       chatInput.value = "";
+
+      // 🔁 Emit to Socket.IO too
+      if (socket && currentPatientId) {
+        socket.emit('doctor-message', { patientId: currentPatientId, message: text });
+      }
     }
 
     chatInput.addEventListener("keydown", (e) => {
@@ -119,7 +124,6 @@
       }
     });
 
-    // THE ONLY CHANGE MADE TO FIX THE SEND BUTTON
     sendBtn.addEventListener("click", sendMessage);
 
     onAuthStateChanged(auth, async user => {
@@ -258,5 +262,27 @@
       <button id="sendBtn" disabled>Send</button>
     </div>
   </div>
+
+  <!-- ✅ Socket.IO Real-time Integration -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log("Connected to Socket.IO:", socket.id);
+    });
+
+    socket.on('new-question', (data) => {
+      console.log("New question from patient:", data);
+    });
+
+    socket.on('patient-message', ({ message }) => {
+      appendMessage(message, "patient", Date.now());
+    });
+
+    socket.on('system-message', (msg) => {
+      appendMessage(msg, "system", Date.now());
+    });
+  </script>
 </body>
 </html>

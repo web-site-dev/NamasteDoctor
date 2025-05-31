@@ -143,17 +143,25 @@
         profileToggle.src = doctorPhoto;
       }
 
+      // ✅ Clear any existing patient session
+      currentPatientId = null;
+
       onValue(ref(db, "sessions"), (snapshot) => {
         snapshot.forEach((snap) => {
           const patientId = snap.key;
           const sessionData = snap.val();
-          if (!sessionData.doctorId && !currentPatientId) {
+
+          // ✅ Auto-reconnect if patient still assigned to this doctor
+          if (sessionData.doctorId === doctorId && !currentPatientId) {
+            connectToPatient(patientId);
+          }
+
+          // ✅ Prompt to accept if not assigned
+          else if (!sessionData.doctorId && !currentPatientId) {
             if (confirm("New patient request received. Accept this chat?")) {
               update(ref(db, `sessions/${patientId}`), { doctorId });
               connectToPatient(patientId);
             }
-          } else if (sessionData.doctorId === doctorId && !currentPatientId) {
-            connectToPatient(patientId);
           }
         });
       });

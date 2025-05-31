@@ -121,6 +121,9 @@
       }
     }
 
+    // ✅ Fix: Assign to global scope AFTER function is defined
+    window.loadPendingDoctors = loadPendingDoctors;
+
     // Approve doctor
     window.approveDoctor = async function (uid) {
       try {

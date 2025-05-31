@@ -175,7 +175,7 @@
       appendMessage(text, "patient", timestamp);
       setTypingStatus(false);
 
-      // ✅ Send to Socket.IO server
+      // ✅ FIXED: Send patientId along with the message
       sendMessageToSocket(text);
 
       // Optional: system response
@@ -209,8 +209,12 @@
       console.log("Connected to Socket.IO server as patient:", socket.id);
     });
 
+    // ✅ FIX: Send patientId with the message
     function sendMessageToSocket(text) {
-      socket.emit("patient-message", { message: text });
+      socket.emit("patient-message", {
+        patientId: patientId,
+        message: text
+      });
     }
   </script>
 </body>

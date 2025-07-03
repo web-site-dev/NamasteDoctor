@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard – NamasteDoctor</title>
+  <link rel="stylesheet" href="../mainstyle.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <header class="navbar">
+    <div class="navbar-container">
+      <div class="logo">Namaste<span>Doctor</span></div>
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="../index.html#about-section">About</a></li>
+          <li><a href="../index.html#posts-section">Posts</a></li>
+          <li><a href="../index.html#how-it-works">How It Works</a></li>
+          <li><a href="../index.html#faq-section">FAQ</a></li>
+          <li><a href="chatbot.html">Chatbot</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+</head>
+<body>
+    <script>
+    const ADMIN_PASSWORD = "prabigya"; 
+    const userInput = prompt("Enter admin password to continue:");
+    if (userInput !== ADMIN_PASSWORD) {
+      alert("Access denied");
+      window.location.href = "../index.html"; 
+    }
+  </script>
+
+  
+  <div class="auth-wrapper">
+    <h2>Admin – Doctor Approvals</h2>
+
+    <button class="auth-btn" onclick="loadPendingDoctors()" style="margin-bottom: 1rem;">
+      Refresh Approvals
+    </button>
+
+    <div id="pending-list">
+      <p>Loading pending doctor requests...</p>
+    </div>
+  </div>
+
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      getDoc,
+      updateDoc,
+      deleteDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    import {
+      getAuth,
+      signInAnonymously
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_5SGRzdlHeKC9kQLVAbMCPsc6w7tteCQ",
+      authDomain: "namastedoctor-2c707.firebaseapp.com",
+      projectId: "namastedoctor-2c707",
+      storageBucket: "namastedoctor-2c707.appspot.com",
+      messagingSenderId: "494276934854",
+      appId: "1:494276934854:web:ba9c89c2fbb1502d9eabc7"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Init EmailJS
+    emailjs.init("xO-QOM1l2Vf1lQixD");
+
+    const pendingList = document.getElementById("pending-list");
+
+    // Email function
+    async function sendApprovalEmail(toEmail, fullName) {
+      try {
+        const result = await emailjs.send(
+          "service_ytcipqf",
+          "template_m5ldr1o",
+          {
+            user_name: fullName || "Doctor",
+            user_email: toEmail
+          }
+        );
+        console.log("Email sent:", result.status);
+      } catch (err) {
+        console.error("Email failed:", err);
+      }
+    }
+
+    // Load unapproved doctors
+    async function loadPendingDoctors() {
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        pendingList.innerHTML = "";
+        let found = false;
+
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (data.role === "doctor" && data.approved === false) {
+            found = true;
+
+            const div = document.createElement("div");
+            div.classList.add("pending-doctor");
+            div.style.marginBottom = "1.5rem";
+            div.style.padding = "1rem";
+            div.style.border = "1px solid #ccc";
+            div.style.borderRadius = "8px";
+            div.style.backgroundColor = "#f9f9f9";
+
+            div.innerHTML = `
+              <p><strong>Full Name:</strong> ${data.fullName || "—"}</p>
+              <p><strong>Email:</strong> ${data.email}</p>
+              <p><strong>NMC Number:</strong> ${data.nmc || "Not Provided"}</p>
+              <button class="auth-btn" onclick="approveDoctor('${docSnap.id}')">Approve</button>
+              <button class="auth-btn" style="background-color: #d9534f; margin-left: 1rem;" onclick="rejectDoctor('${docSnap.id}')">Reject</button>
+            `;
+            pendingList.appendChild(div);
+          }
+        });
+
+        if (!found) {
+          pendingList.innerHTML = "<p>No pending doctor approvals.</p>";
+        }
+      } catch (err) {
+        console.error("Error loading doctors:", err);
+        pendingList.innerHTML = "<p>Error loading doctor list. Check console for details.</p>";
+      }
+    }
+
+    // Approve doctor
+    window.approveDoctor = async function (uid) {
+      try {
+        const userRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userRef);
+        const data = userDoc.data();
+
+        if (!data) {
+          alert("User data not found.");
+          return;
+        }
+
+        await updateDoc(userRef, { approved: true });
+        await sendApprovalEmail(data.email, data.fullName);
+        alert("Doctor approved and email sent.");
+        loadPendingDoctors();
+      } catch (err) {
+        alert("Error approving doctor: " + err.message);
+        console.error(err);
+      }
+    };
+
+    
+    window.rejectDoctor = async function (uid) {
+      const confirmDelete = confirm("Are you sure you want to reject and delete this request?");
+      if (!confirmDelete) return;
+
+      try {
+        await deleteDoc(doc(db, "users", uid));
+        alert("Doctor request rejected and removed.");
+        loadPendingDoctors();
+      } catch (err) {
+        alert("Error rejecting doctor: " + err.message);
+        console.error(err);
+      }
+    };
+
+    // 👇 Authenticate before accessing Firestore
+    signInAnonymously(auth)
+      .then(() => {
+        console.log("Signed in anonymously");
+        window.loadPendingDoctors = loadPendingDoctors;
+        loadPendingDoctors();
+      })
+      .catch((error) => {
+        console.error("Anonymous sign-in failed:", error);
+        pendingList.innerHTML = "<p>Failed to authenticate. Cannot load doctor list.</p>";
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NamasteDoctor – Patient Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../chat-ui.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    .typing-indicator {
+      font-style: italic;
+      color: #666;
+      padding-left: 15px;
+      margin-top: -8px;
+      display: none;
+    }
+    .doctor-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 6px;
+      cursor: pointer;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .profile-popup {
+      position: fixed;
+      right: 20px;
+      top: 70px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+      width: 260px;
+      display: none;
+      z-index: 999;
+      text-align: center;
+      padding: 16px;
+    }
+    .profile-popup img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #fff;
+      margin-top: -40px;
+    }
+    .profile-popup h3 {
+      margin: 10px 0 5px;
+    }
+    .profile-popup span {
+      color: #777;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-shell">
+    <div class="topbar">
+      <div class="brand">NamasteDoctor</div>
+      <a href="chatbot.html" class="btn primary-btn" style="margin-left: 1rem;">Sexual Health Chatbot</a>
+    </div>
+
+    <div class="chat-body" id="chatMessages">
+      <div class="message system">Welcome! You can ask your health questions here. Our medical team will respond as soon as possible.</div>
+    </div>
+    <div id="typingIndicator" class="typing-indicator">Doctor is typing...</div>
+
+    <div class="chat-footer">
+      <textarea id="chatInput" placeholder="Type your question..." oninput="setTypingStatus(true)"></textarea>
+      <button onclick="sendMessage()" id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <div class="profile-popup" id="doctorProfile">
+    <div style="background: #4285f4; height: 60px; border-radius: 12px 12px 0 0;"></div>
+    <img id="doctorPhoto" src="" alt="Doctor Photo">
+    <h3 id="doctorName"></h3>
+    <span id="doctorNMC">Certified Doctor</span>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_5SGRzdlHeKC9kQLVAbMCPsc6w7tteCQ",
+      authDomain: "namastedoctor-2c707.firebaseapp.com",
+      databaseURL: "https://namastedoctor-2c707-default-rtdb.firebaseio.com",
+      projectId: "namastedoctor-2c707",
+      storageBucket: "namastedoctor-2c707.appspot.com",
+      messagingSenderId: "494276934854",
+      appId: "1:494276934854:web:ba9c89c2fbb1502d9eabc7"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const firestore = firebase.firestore();
+
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const doctorProfile = document.getElementById("doctorProfile");
+    const doctorPhoto = document.getElementById("doctorPhoto");
+    const doctorName = document.getElementById("doctorName");
+    const doctorNMC = document.getElementById("doctorNMC");
+
+    let patientId = localStorage.getItem("patientId") || "p-" + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem("patientId", patientId);
+
+    let typingTimeout = null;
+    let activeDoctor = null;
+
+    function showDoctorProfile() {
+      if (activeDoctor) {
+        doctorName.textContent = activeDoctor.fullName || "Doctor";
+        doctorNMC.textContent = `NMC: ${activeDoctor.nmc || 'N/A'}`;
+        doctorPhoto.src = activeDoctor.photo || "https://img.icons8.com/emoji/48/doctor-emoji.png";
+        doctorProfile.style.display = "block";
+        setTimeout(() => doctorProfile.style.display = "none", 4000);
+      }
+    }
+
+    function appendMessage(text, type = "system", timestamp = null) {
+      const div = document.createElement("div");
+      div.className = "message " + type;
+      let content = `<div>${text}</div>`;
+      if (type === "doctor" && activeDoctor) {
+        const photo = activeDoctor.photo || "https://img.icons8.com/emoji/48/doctor-emoji.png";
+        content = `<div><img src="${photo}" class="doctor-icon" onclick="showDoctorProfile()"> ${text}</div>`;
+      }
+      div.innerHTML = content + (timestamp ? `<span class='timestamp'>${new Date(timestamp).toLocaleTimeString()}</span>` : '');
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Initialize chat session
+    db.ref("sessions/" + patientId).set({ doctorId: null, createdAt: Date.now() });
+    db.ref("messages/" + patientId).remove();
+
+    db.ref("sessions/" + patientId).on("value", async (snap) => {
+      const session = snap.val();
+      if (session && session.doctorId) {
+        try {
+          const docRef = firestore.collection("users").doc(session.doctorId);
+          const docSnap = await docRef.get();
+          if (docSnap.exists) {
+            activeDoctor = docSnap.data();
+          }
+        } catch (err) {
+          console.error("Failed to fetch doctor from Firestore:", err);
+        }
+
+        db.ref("messages/" + patientId).off();
+        db.ref("messages/" + patientId).on("child_added", (snapshot) => {
+          const msg = snapshot.val();
+          if (msg.sender === "doctor") {
+            appendMessage(msg.text, "doctor", msg.timestamp);
+          }
+        });
+      }
+    });
+
+    db.ref("typing/" + patientId).on("value", (snap) => {
+      typingIndicator.style.display = snap.val() ? "block" : "none";
+    });
+
+    function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      const timestamp = Date.now();
+      db.ref("messages/" + patientId).push({ sender: "patient", text, timestamp });
+
+      chatInput.value = "";
+      appendMessage(text, "patient", timestamp);
+      setTypingStatus(false);
+
+      // ✅ FIXED: Send patientId along with the message
+      sendMessageToSocket(text);
+
+      // Optional: system response
+      setTimeout(() => {
+        appendMessage("Your message has been received and will be answered as soon as possible by our medical staff.", "system");
+      }, 1000);
+    }
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function setTypingStatus(isTyping) {
+      db.ref("typing/" + patientId).set(isTyping);
+      if (typingTimeout) clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        db.ref("typing/" + patientId).set(false);
+      }, 2000);
+    }
+  </script>
+
+  <!-- ✅ Socket.IO Integration -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log("Connected to Socket.IO server as patient:", socket.id);
+    });
+
+    // ✅ FIX: Send patientId with the message
+    function sendMessageToSocket(text) {
+      socket.emit("patient-message", {
+        patientId: patientId,
+        message: text
+      });
+    }
+  </script>
+</body>
+</html>

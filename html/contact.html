@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us – NamasteDoctor</title>
+  <link rel="stylesheet" href="../mainstyle.css">
+  <style>
+    body {
+      background: #C2E1FC;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    header.navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      z-index: 1000;
+    }
+    main {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 80px;
+      margin-bottom: 60px;
+      min-height: 0;
+    }
+    .contact-container {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem 2rem 2rem;
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .contact-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #FF4081;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .contact-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      font-family: inherit;
+      resize: none;
+    }
+    .contact-form textarea {
+      min-height: 120px;
+      max-height: 300px;
+    }
+    .contact-form button {
+      background: #FF4081;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.8rem 1.5rem;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .contact-form button:hover {
+      background: #e63971;
+    }
+    .contact-success {
+      color: #219150;
+      background: #e8f5e9;
+      border-radius: 10px;
+      padding: 1.2rem 1rem;
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 500;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .contact-container {
+        padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+      }
+      .contact-title {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="../index.html" class="logo" style="cursor:pointer; text-decoration:none;">Namaste<span>Doctor</span></a>
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="../index.html#about-section">About</a></li>
+          <li><a href="../index.html#posts-section">Posts</a></li>
+          <li><a href="../index.html#how-it-works">How It Works</a></li>
+          <li><a href="../index.html#faq-section">FAQ</a></li>
+          <li><a href="chatbot.html">Chatbot</a></li>
+          <li><a href="login.html" class="login-btn">Doctor's Login</a></li>
+        </ul>
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="contact-container fade-in">
+      <div class="contact-title">Contact Us</div>
+      <form class="contact-form" id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="7e9b94d7-b439-4975-a0dd-c444d00667c1">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="email" name="email" placeholder="Your Email" required>
+        <textarea name="message" placeholder="Your Message" required></textarea>
+        <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+        <input type="hidden" name="redirect" value="contact-success.html">
+        <button type="submit">Send Message</button>
+      </form>
+      <div class="contact-success" id="contactSuccess">Your Message has been delivered to NamasteDoctor Team.</div>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2025 NamasteDoctor. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Use</a>
+      <a href="contact.html">Contact Us</a>
+    </div>
+  </footer>
+  <script src="../main.js"></script>
+  <script>
+    // Hamburger menu logic
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    const body = document.body;
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      hamburger.classList.toggle('toggle');
+      body.classList.toggle('no-scroll');
+    });
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href.startsWith("#")) {
+          e.preventDefault();
+          navLinks.classList.remove('active');
+          hamburger.classList.remove('toggle');
+          body.classList.remove('no-scroll');
+          const targetSection = document.querySelector(href);
+          if (targetSection) {
+            targetSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

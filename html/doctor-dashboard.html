@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NamasteDoctor – Doctor Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../chat-ui.css" />
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    import {
+      getDatabase,
+      ref,
+      onChildAdded,
+      onValue,
+      set,
+      update,
+      off,
+      onDisconnect,
+      remove
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_5SGRzdlHeKC9kQLVAbMCPsc6w7tteCQ",
+      authDomain: "namastedoctor-2c707.firebaseapp.com",
+      databaseURL: "https://namastedoctor-2c707-default-rtdb.firebaseio.com",
+      projectId: "namastedoctor-2c707",
+      storageBucket: "namastedoctor-2c707.appspot.com",
+      messagingSenderId: "494276934854",
+      appId: "1:494276934854:web:ba9c89c2fbb1502d9eabc7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const firestore = getFirestore(app);
+    const auth = getAuth(app);
+
+    let doctorId = null;
+    let doctorName = "Doctor";
+    let doctorPhoto = "";
+    let doctorNMC = "";
+    let currentPatientId = null;
+    let points = 0;
+
+    const welcomeText = document.getElementById("welcomeText");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const docPoints = document.getElementById("docPoints");
+    const waitMessage = document.getElementById("waitMessage");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const profilePic = document.getElementById("profilePic");
+    const profileToggle = document.getElementById("profileToggle");
+    const profileBox = document.getElementById("profileBox");
+    const profileName = document.getElementById("profileName");
+    const profileNMC = document.getElementById("profileNMC");
+
+    profileToggle.addEventListener("click", () => {
+      profileBox.style.display = profileBox.style.display === "block" ? "none" : "block";
+    });
+
+    function formatTime(ts) {
+      return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function appendMessage(text, type = "system", timestamp = null) {
+      if (waitMessage.style.display !== "none") waitMessage.style.display = "none";
+      const div = document.createElement("div");
+      div.className = "message " + type;
+      const icon = type === "doctor" ? `<span class='doctor-icon' style='background-image: url(${doctorPhoto}); width: 24px; height: 24px; background-size: cover; border-radius: 50%; display: inline-block;'></span>` : "";
+      div.innerHTML = `<div>${icon}${text}</div>` + (timestamp ? `<span class="timestamp">${formatTime(timestamp)}</span>` : '');
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function updatePoints() {
+      points++;
+      docPoints.textContent = points;
+      if (doctorId) {
+        set(ref(db, `doctors/${doctorId}/points`), points);
+      }
+    }
+
+    function connectToPatient(patientId) {
+      currentPatientId = patientId;
+      chatInput.disabled = false;
+      sendBtn.disabled = false;
+      chatMessages.innerHTML = "";
+      appendMessage("—— New Session ——", "system");
+
+      const msgRef = ref(db, `messages/${patientId}`);
+      off(msgRef);
+      onChildAdded(msgRef, (snapshot) => {
+        const msg = snapshot.val();
+        if (msg.sender === "patient") updatePoints();
+        appendMessage(msg.text, msg.sender, msg.timestamp);
+      });
+
+      onValue(ref(db, `typing/${patientId}`), (snap) => {
+        typingIndicator.style.display = snap.val() ? "block" : "none";
+      });
+
+      // Ensure session removed on disconnect
+      onDisconnect(ref(db, `sessions/${patientId}`)).remove();
+    }
+
+    function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      if (!currentPatientId) {
+        alert("No patient connected.");
+        return;
+      }
+
+      const timestamp = Date.now();
+      set(ref(db, `messages/${currentPatientId}/${timestamp}`), {
+        sender: "doctor",
+        text,
+        timestamp,
+        doctorName
+      });
+
+      chatInput.value = "";
+    }
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) return window.location.href = "login.html";
+
+      doctorId = user.uid;
+      const userDoc = await getDoc(doc(firestore, "users", doctorId));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        doctorName = data.fullName || "Doctor";
+        doctorPhoto = data.photo || "https://img.icons8.com/emoji/48/doctor-emoji.png";
+        doctorNMC = data.nmc || "N/A";
+        welcomeText.textContent = `Dr. ${doctorName}`;
+        profileName.textContent = `Dr. ${doctorName}`;
+        profileNMC.textContent = `NMC: ${doctorNMC}`;
+        profilePic.src = doctorPhoto;
+        profileToggle.src = doctorPhoto;
+      }
+
+      // Listen for new or assigned sessions
+      onValue(ref(db, "sessions"), async (snapshot) => {
+        snapshot.forEach(async (snap) => {
+          const patientId = snap.key;
+          const sessionData = snap.val();
+
+          if (!currentPatientId && sessionData.doctorId === doctorId) {
+            connectToPatient(patientId);
+          }
+
+          if (!currentPatientId && !sessionData.doctorId) {
+            const confirmAccept = confirm("New patient request received. Accept this chat?");
+            if (confirmAccept) {
+              currentPatientId = patientId;
+              await update(ref(db, `sessions/${patientId}`), { doctorId });
+              connectToPatient(patientId);
+            }
+          }
+        });
+      });
+    });
+  </script>
+  <style>
+    .doctor-icon {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    .typing-indicator {
+      font-style: italic;
+      color: #888;
+      padding: 5px;
+      display: none;
+    }
+    .profile-container {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      width: 260px;
+      background: white;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      display: none;
+      z-index: 10;
+      text-align: center;
+      padding: 15px;
+    }
+    .profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-top: -60px;
+      border: 4px solid white;
+    }
+    .profile-header {
+      background: #4285f4;
+      height: 70px;
+      border-radius: 12px 12px 0 0;
+    }
+    .profile-name {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+    .profile-role {
+      font-size: 0.9em;
+      color: #777;
+    }
+    .profile-toggle {
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+    .topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-shell">
+    <div class="topbar">
+      <div class="brand" id="welcomeText">NamasteDoctor – Doctor</div>
+      <a href="chatbot.html" class="btn primary-btn" style="margin-left: 1rem;">Sexual Health Chatbot</a>
+      <div class="topbar-profile">
+        <img src="" id="profileToggle" class="profile-toggle" title="View Profile">
+        <div class="points-wrap"><span id="docPoints">0</span> Points</div>
+        <div id="profileBox" class="profile-container">
+          <div class="profile-header"></div>
+          <img id="profilePic" class="profile-pic" src="#" alt="Doctor" />
+          <div class="profile-name" id="profileName"></div>
+          <div class="profile-role" id="profileNMC">Certified Doctor</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-body" id="chatMessages">
+      <p id="waitMessage">Waiting for a patient to connect...</p>
+    </div>
+    <div class="typing-indicator" id="typingIndicator">Patient is typing...</div>
+
+    <div class="chat-footer">
+      <textarea id="chatInput" placeholder="Type your reply..." disabled></textarea>
+      <button id="sendBtn" disabled>Send</button>
+    </div>
+  </div>
+</body>
+</html>

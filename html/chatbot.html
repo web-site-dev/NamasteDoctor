@@ -7,191 +7,213 @@
   <link rel="stylesheet" href="../mainstyle.css">
   <style>
     html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  min-height: 100vh;
-  min-width: 100vw;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  background: #C2E1FC;
-}
-
-header.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  z-index: 1000;
-}
-
-main {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  min-height: 0;
-  margin-top: 80px; /* height of navbar */
-  margin-bottom: 60px; /* height of footer */
-  width: 100vw;
-  padding: 0;
-}
-
-.chatbot-container {
-  width: 100vw;
-  height: 100%;
-  min-height: 0;
-  margin: 0;
-  background: #fff;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  position: relative;
-  max-width: 100vw;
-}
-
-.chatbot-title {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #FF4081;
-  margin: 1.5rem 0 1rem 0;
-}
-
-.chat-messages {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: 1.5rem 1rem 1rem 1rem; /* Slightly adjust padding for symmetry */
-  background: #f9f9f9;
-  border-radius: 0;
-  min-height: 0;
-  max-height: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  width: 100%;
-  box-sizing: border-box;
-  align-items: center; /* Center messages */
-}
-
-.chat-message {
-  padding: 0.7rem 1rem;
-  border-radius: 12px;
-  max-width: 700px;
-  font-size: 1rem;
-  line-height: 1.5;
-  word-break: break-word;
-  white-space: pre-line;
-  margin-left: auto;
-  margin-right: auto;
-  width: fit-content; /* Ensures messages don’t extend beyond their content */
-}
-
-.chat-message.user {
-  background: #FFE3EC;
-  align-self: flex-end;
-}
-
-.chat-message.bot {
-  background: #e8f5e9;
-  align-self: flex-start;
-}
-
-.chatbot-input-row {
-  display: flex;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: #fff;
-  border-top: 1px solid #eee;
-  position: fixed;
-  bottom: 60px;
-  left: 0;
-  width: 100vw;
-  z-index: 100;
-  box-sizing: border-box;
-  justify-content: center; /* Center the input box */
-}
-
-.chatbot-input-row input {
-  flex: 1;
-  padding: 0.7rem 1rem;
-  border-radius: 20px;
-  border: 1px solid #ddd;
-  font-size: 1rem;
-  outline: none;
-}
-
-.chatbot-input-row button {
-  background: #FF4081;
-  color: #fff;
-  border: none;
-  border-radius: 20px;
-  padding: 0 1.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.chatbot-input-row button:hover {
-  background: #e63971;
-}
-
-#stopGeneratingBtn {
-  position: fixed;
-  bottom: 110px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 101;
-}
-
-#chatLoading {
-  position: fixed;
-  bottom: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 101;
-  background: #fff;
-  border-radius: 10px;
-  padding: 0.2rem 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  background: #fff;
-  z-index: 1000;
-  border-top: 1px solid #eee;
-  padding: 0.5rem 0;
-}
-
-.footer-links {
-  text-align: center;
-}
-
-@media (max-width: 700px) {
-  .chat-message {
-    max-width: 98vw;
-    font-size: 0.98rem;
-  }
-  .chatbot-title {
-    font-size: 1.2rem;
-  }
-  .chatbot-input-row {
-    padding: 0.5rem;
-  }
-}
-
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #F4F6FA;
+    }
+    body {
+      min-height: 100vh;
+      min-width: 100vw;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    header.navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      z-index: 1000;
+    }
+    main {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      min-height: 0;
+      margin-top: 80px;
+      margin-bottom: 60px;
+      width: 100vw;
+      padding: 0;
+      background: #F4F6FA;
+    }
+    .chatbot-outer {
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .chatbot-container {
+      width: 100%;
+      max-width: 700px;
+      height: 80vh;
+      min-height: 400px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .chatbot-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #FF4081;
+      margin: 1.5rem 0 1rem 0;
+      background: #fff;
+      z-index: 2;
+    }
+    .chat-messages {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 1.5rem 1rem 1rem 1rem;
+      background: #F4F6FA;
+      border-radius: 0 0 18px 18px;
+      min-height: 0;
+      max-height: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .chat-message {
+      padding: 0.9rem 1.2rem;
+      border-radius: 18px;
+      max-width: 80%;
+      font-size: 1.08rem;
+      line-height: 1.6;
+      word-break: break-word;
+      white-space: pre-line;
+      margin-bottom: 0.2rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      transition: background 0.2s;
+    }
+    .chat-message.user {
+      background: #FFEEF5;
+      align-self: flex-end;
+      color: #333;
+      border-bottom-right-radius: 6px;
+      border-bottom-left-radius: 18px;
+      border-top-right-radius: 18px;
+      border-top-left-radius: 18px;
+    }
+    .chat-message.bot {
+      background: #E8F5E9;
+      align-self: flex-start;
+      color: #222;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 18px;
+      border-top-right-radius: 18px;
+      border-top-left-radius: 18px;
+    }
+    .chatbot-input-row {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: #fff;
+      border-top: 1px solid #eee;
+      position: relative;
+      width: 100%;
+      z-index: 10;
+      box-sizing: border-box;
+      border-radius: 0 0 18px 18px;
+    }
+    .chatbot-input-row input {
+      flex: 1;
+      padding: 0.9rem 1.2rem;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      font-size: 1.08rem;
+      outline: none;
+      background: #F4F6FA;
+      transition: border 0.2s;
+    }
+    .chatbot-input-row input:focus {
+      border: 1.5px solid #FF4081;
+    }
+    .chatbot-input-row button {
+      background: #FF4081;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 0 1.5rem;
+      font-weight: bold;
+      font-size: 1.08rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      min-width: 120px;
+      min-height: 44px;
+    }
+    .chatbot-input-row button:hover {
+      background: #e63971;
+    }
+    #stopGeneratingBtn {
+      position: absolute;
+      right: 1.2rem;
+      bottom: 4.2rem;
+      z-index: 20;
+      background: #e63971;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 0.5rem 1.5rem;
+      font-weight: bold;
+      font-size: 1.08rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: none;
+    }
+    #chatLoading {
+      position: absolute;
+      left: 50%;
+      bottom: 5.5rem;
+      transform: translateX(-50%);
+      z-index: 21;
+      background: #fff;
+      border-radius: 10px;
+      padding: 0.2rem 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      background: #fff;
+      z-index: 1000;
+      border-top: 1px solid #eee;
+      padding: 0.5rem 0;
+    }
+    .footer-links {
+      text-align: center;
+    }
+    @media (max-width: 900px) {
+      .chatbot-container {
+        max-width: 100vw;
+        border-radius: 0;
+      }
+      .chatbot-title {
+        font-size: 1.3rem;
+      }
+      .chatbot-input-row {
+        padding: 0.5rem;
+        border-radius: 0 0 18px 18px;
+      }
+      .chat-message {
+        font-size: 0.98rem;
+        max-width: 98vw;
+      }
+    }
   </style>
   <!-- Add marked.js for markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -219,28 +241,23 @@ footer {
   </header>
 
   <main>
-    <div class="chatbot-container fade-in">
-      <div class="chatbot-title">Sexual Health Chatbot</div>
-      <div class="chat-messages" id="chatMessages">
-        <div class="chat-message bot">Hi! I am your sexual health assistant. Ask me anything about sexual and reproductive health. Your questions are anonymous and confidential.</div>
+    <div class="chatbot-outer">
+      <div class="chatbot-container fade-in">
+        <div class="chatbot-title">Sexual Health Chatbot</div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-message bot">Hi! I am your sexual health assistant. Ask me anything about sexual and reproductive health. Your questions are anonymous and confidential.</div>
+        </div>
+        <form class="chatbot-input-row" id="chatForm" autocomplete="off">
+          <input type="text" id="chatInput" placeholder="Type your question..." required />
+          <button type="submit" id="sendBtn">Send</button>
+        </form>
+        <div id="chatLoading" style="display:none; text-align:center; color:#888; margin-top:0.5rem;">Thinking...</div>
+        <button id="stopGeneratingBtn" style="display:none; margin: 0.5rem auto 0 auto; background:#e63971; color:#fff; border:none; border-radius:20px; padding:0.5rem 1.5rem; font-weight:bold; cursor:pointer;">Stop Generating</button>
       </div>
-      <form class="chatbot-input-row" id="chatForm" autocomplete="off">
-        <input type="text" id="chatInput" placeholder="Type your question..." required />
-        <button type="submit" id="sendBtn">Send</button>
-      </form>
-      <div id="chatLoading" style="display:none; text-align:center; color:#888; margin-top:0.5rem;">Thinking...</div>
-      <button id="stopGeneratingBtn" style="display:none; margin: 0.5rem auto 0 auto; background:#e63971; color:#fff; border:none; border-radius:20px; padding:0.5rem 1.5rem; font-weight:bold; cursor:pointer;">Stop Generating</button>
     </div>
   </main>
 
-  <footer>
-    <p>&copy; 2025 NamasteDoctor. All rights reserved.</p>
-    <div class="footer-links">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Use</a>
-      <a href="contact.html">Contact Us</a>
-    </div>
-  </footer>
+  
 
   <script src="../main.js"></script>
   <script>

@@ -1,0 +1,254 @@
+/* ===================== RESET & BASE STYLES ===================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #C2E1FC;
+  color: #333;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+body.no-scroll {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===================== CHAT UI STYLES ===================== */
+.chat-shell {
+  width: 100%;
+  max-width: 500px;
+  height: 90vh;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  margin: 5vh auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  background-color: #FFC2D9;
+  color: #333;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.brand {
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.points-wrap {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 5px 15px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+}
+
+.points-wrap button {
+  background: #FF4081;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.chat-body {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #f9f9f9;
+}
+
+.message {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.message.system {
+  background-color: #EAEAEA;
+  align-self: center;
+  text-align: center;
+  max-width: 90%;
+}
+
+.message.patient {
+  background-color: #FFE3EC;
+  border-bottom-right-radius: 5px;
+  align-self: flex-end;
+}
+
+.message.doctor {
+  background-color: #e8f5e9;
+  border-bottom-left-radius: 5px;
+  align-self: flex-start;
+}
+
+.chat-footer {
+  padding: 10px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 10px;
+  background: white;
+}
+
+.chat-footer textarea {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  resize: none;
+  height: 50px;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.chat-footer button {
+  background: #FF4081;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.chat-footer button:hover {
+  background: #e63971;
+}
+
+.chat-footer button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal h2 {
+  margin-top: 0;
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.plans {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.plan-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.plan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.plan-card.highlighted {
+  border-color: #FF4081;
+  background: #FFF0F5;
+}
+
+.plan-card h4 {
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.plan-card p {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.plan-card button {
+  background: #FF4081;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.plan-card button:hover {
+  background: #e63971;
+}
+
+#waitMessage {
+  text-align: center;
+  color: #666;
+  margin-top: 50%;
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .chat-shell {
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .message {
+    max-width: 85%;
+  }
+}
